@@ -1384,7 +1384,7 @@
         };
         console.log('✅ Task data loaded:', Object.keys(tasks).length, 'days');
 
-        // STEPAHEAD: Simple render function to display tasks
+        // STEPAHEAD: Render function to display all 7 days of tasks
         function renderHomeTab() {
             console.log('🏠 renderHomeTab called');
 
@@ -1394,14 +1394,25 @@
                 return;
             }
 
+            const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            const dayShortNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const today = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc
+            const todayIndex = today === 0 ? 7 : today; // Convert Sunday from 0 to 7
+
+            // Separate today's tasks from other days
+            const todayTasks = tasks[todayIndex];
+            const otherDays = Object.keys(tasks).filter(day => parseInt(day) !== todayIndex);
+
             const html = `
-                <div class="p-4">
+                <div class="p-4 space-y-4">
                     <h2 class="text-2xl font-bold mb-4">📅 My Tasks</h2>
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <h3 class="font-bold mb-2">Monday's Tasks</h3>
+
+                    <!-- Today's large card -->
+                    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                        <h3 class="font-bold mb-3 text-xl">Today - ${dayNames[todayIndex - 1]}</h3>
                         <div class="space-y-2">
-                            ${tasks[1].map(task => `
-                                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded">
+                            ${todayTasks.map(task => `
+                                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded hover:bg-gray-100">
                                     <span class="text-2xl">${task.icon}</span>
                                     <div>
                                         <div class="font-semibold">${task.name}</div>
@@ -1411,11 +1422,27 @@
                             `).join('')}
                         </div>
                     </div>
+
+                    <!-- Other days as horizontal scrollable squares -->
+                    <div>
+                        <h4 class="font-semibold text-sm text-gray-600 mb-2">Other Days</h4>
+                        <div class="flex gap-3 overflow-x-auto pb-2">
+                            ${otherDays.map(day => `
+                                <div class="bg-white rounded-lg shadow p-4 flex-shrink-0" style="width: 100px; height: 100px;">
+                                    <div class="flex flex-col items-center justify-center h-full text-center">
+                                        <h3 class="font-semibold text-sm mb-1">${dayShortNames[day - 1]}</h3>
+                                        <div class="text-2xl font-bold text-gray-400">${tasks[day].length}</div>
+                                        <div class="text-xs text-gray-500">tasks</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
                 </div>
             `;
 
             homeTab.innerHTML = html;
-            console.log('✅ Home tab rendered');
+            console.log('✅ Home tab rendered with', Object.keys(tasks).length, 'days, today is day', todayIndex);
         }
 
         // Call renderHomeTab when app loads
