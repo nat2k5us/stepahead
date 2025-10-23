@@ -828,7 +828,7 @@
     </script>
 
     <script>
-        // STEPAHEAD: Task data structure (3 days for testing)
+        // STEPAHEAD: Task data structure (full 7 days)
         const tasks = {
           1: [
             {
@@ -840,6 +840,7 @@
                 "Arrange the pillows at the top",
                 "Step back and look - you did it!"
               ],
+              stepDurations: [30, 20, 15, 10], // seconds for each step
               color: "#E8F4F8"
             },
             {
@@ -853,7 +854,21 @@
                 "Rinse with clean water",
                 "Place in the dish rack to dry"
               ],
+              stepDurations: [20, 10, 15, 60, 30, 20], // seconds for each step
               color: "#FFF4E6"
+            },
+            {
+              name: "Water One Plant",
+              icon: "🌱",
+              steps: [
+                "Get a cup of water",
+                "Find one plant in your home",
+                "Feel the soil - is it dry?",
+                "Slowly pour water until soil is damp",
+                "You helped something grow today!"
+              ],
+              stepDurations: [15, 30, 20, 30, 10], // seconds for each step
+              color: "#E8F8F5"
             }
           ],
           2: [
@@ -867,6 +882,42 @@
                 "Step back and look - you did it!"
               ],
               color: "#E8F4F8"
+            },
+            {
+              name: "Take Out the Trash",
+              icon: "🗑️",
+              steps: [
+                "Tie the trash bag closed",
+                "Lift the bag out of the trash can",
+                "Walk to your outside trash bin",
+                "Put the bag in the bin",
+                "Put a new bag in your trash can",
+                "Wash your hands"
+              ],
+              color: "#F0F4FF"
+            },
+            {
+              name: "Wipe the Kitchen Counter",
+              icon: "✨",
+              steps: [
+                "Get a clean cloth or paper towel",
+                "Spray cleaner OR wet the cloth with water",
+                "Wipe the counter from left to right",
+                "Get any crumbs or spills",
+                "Look at your clean counter - nice work!"
+              ],
+              color: "#FFF0F5"
+            },
+            {
+              name: "Put Away 5 Things",
+              icon: "📦",
+              steps: [
+                "Look around for things that are out of place",
+                "Pick up one thing and put it where it belongs",
+                "Do this 4 more times (5 things total)",
+                "Your space looks better already!"
+              ],
+              color: "#F5F0FF"
             }
           ],
           3: [
@@ -880,6 +931,454 @@
                 "Step back and look - you did it!"
               ],
               color: "#E8F4F8"
+            },
+            {
+              name: "Wash Your Lunch Dishes",
+              icon: "🍴",
+              steps: [
+                "Scrape any leftover food into the trash",
+                "Turn on warm water",
+                "Put dish soap on a sponge",
+                "Scrub each dish clean",
+                "Rinse with clean water",
+                "Place in the dish rack to dry"
+              ],
+              color: "#FFF4E6"
+            },
+            {
+              name: "Sweep the Kitchen Floor",
+              icon: "🧹",
+              steps: [
+                "Get your broom and dustpan",
+                "Start in one corner of the kitchen",
+                "Sweep dirt into a pile",
+                "Use the dustpan to pick up the pile",
+                "Put dirt in the trash",
+                "Put broom and dustpan away"
+              ],
+              color: "#E8F8F5"
+            },
+            {
+              name: "Sort Your Mail",
+              icon: "📮",
+              steps: [
+                "Get any mail from today",
+                "Make 2 piles: important and not important",
+                "Put important mail in one spot",
+                "Recycle junk mail",
+                "You're organized!"
+              ],
+              color: "#F0F4FF"
+            },
+            {
+              name: "Change Your Hand Towel",
+              icon: "🧴",
+              steps: [
+                "Take the used towel off the rack",
+                "Put it in the laundry",
+                "Get a clean towel",
+                "Hang the clean towel on the rack",
+                "Fresh towel ready!"
+              ],
+              color: "#FFF0F5"
+            }
+          ],
+          4: [
+            {
+              name: "Make Your Bed",
+              icon: "🛏️",
+              steps: [
+                "Pull the blanket and sheets up to the pillows",
+                "Smooth out any wrinkles with your hands",
+                "Arrange the pillows at the top",
+                "Step back and look - you did it!"
+              ],
+              color: "#E8F4F8"
+            },
+            {
+              name: "Empty the Dishwasher",
+              icon: "🍽️",
+              steps: [
+                "Open the dishwasher",
+                "Touch a dish - is it dry and cool?",
+                "Put away all the plates",
+                "Put away all the cups",
+                "Put away all the silverware",
+                "Put away any other dishes",
+                "Close the empty dishwasher"
+              ],
+              color: "#FFF4E6"
+            },
+            {
+              name: "Water Your Plants",
+              icon: "💧",
+              steps: [
+                "Get your watering can or cup",
+                "Fill it with water",
+                "Go to each plant",
+                "Give each one a drink of water",
+                "Plants are happy!"
+              ],
+              color: "#E8F8F5"
+            },
+            {
+              name: "Wipe Down the Bathroom Sink",
+              icon: "🚰",
+              steps: [
+                "Get a cloth or paper towel",
+                "Spray cleaner OR wet with water",
+                "Wipe the sink and faucet",
+                "Wipe around the sink edges",
+                "Throw away paper towel OR rinse cloth",
+                "Shiny and clean!"
+              ],
+              color: "#F0F4FF"
+            },
+            {
+              name: "Take Out Recycling",
+              icon: "♻️",
+              steps: [
+                "Gather items to recycle",
+                "Take them to your recycling bin",
+                "Put them in the bin",
+                "Put a new bag in if needed",
+                "Great job recycling!"
+              ],
+              color: "#FFF0F5"
+            },
+            {
+              name: "Fold 3 Pieces of Laundry",
+              icon: "👕",
+              steps: [
+                "Find clean laundry that needs folding",
+                "Pick one piece and fold it",
+                "Do this 2 more times (3 pieces total)",
+                "Put folded items away OR in a neat pile",
+                "Good work!"
+              ],
+              color: "#F5F0FF"
+            }
+          ],
+          5: [
+            {
+              name: "Make Your Bed",
+              icon: "🛏️",
+              steps: [
+                "Pull the blanket and sheets up to the pillows",
+                "Smooth out any wrinkles with your hands",
+                "Arrange the pillows at the top",
+                "Step back and look - you did it!"
+              ],
+              color: "#E8F4F8"
+            },
+            {
+              name: "Vacuum One Room",
+              icon: "🏠",
+              steps: [
+                "Get the vacuum cleaner",
+                "Plug it in",
+                "Turn it on",
+                "Push it back and forth across the floor",
+                "Get the whole room",
+                "Turn off and put away vacuum",
+                "Room looks great!"
+              ],
+              color: "#FFF4E6"
+            },
+            {
+              name: "Clean the Toilet",
+              icon: "🚽",
+              steps: [
+                "Put on gloves if you have them",
+                "Squirt toilet cleaner inside the bowl",
+                "Use the toilet brush to scrub",
+                "Flush the toilet",
+                "Wipe the seat with a disinfecting wipe",
+                "Throw away wipe and wash hands",
+                "Clean toilet!"
+              ],
+              color: "#E8F8F5"
+            },
+            {
+              name: "Organize Your Desk",
+              icon: "📝",
+              steps: [
+                "Clear everything off your desk",
+                "Wipe the desk surface",
+                "Put back only what you need",
+                "Throw away any trash",
+                "Neat desk, clear mind!"
+              ],
+              color: "#F0F4FF"
+            },
+            {
+              name: "Change Your Bedsheets",
+              icon: "🛏️",
+              steps: [
+                "Take off all sheets and pillowcases",
+                "Put them in the laundry",
+                "Get clean sheets",
+                "Put the fitted sheet on the mattress",
+                "Put the flat sheet on top",
+                "Add clean pillowcases",
+                "Arrange blanket and pillows",
+                "Fresh bed!"
+              ],
+              color: "#FFF0F5"
+            },
+            {
+              name: "Dust 3 Surfaces",
+              icon: "✨",
+              steps: [
+                "Get a dust cloth or duster",
+                "Pick one surface (table, shelf, etc)",
+                "Wipe off the dust",
+                "Do this for 2 more surfaces",
+                "Less dust, more fresh air!"
+              ],
+              color: "#F5F0FF"
+            },
+            {
+              name: "Organize One Drawer",
+              icon: "🗄️",
+              steps: [
+                "Pick one drawer to organize",
+                "Take everything out",
+                "Throw away anything you don't need",
+                "Put things back in neat groups",
+                "Close the drawer - so organized!"
+              ],
+              color: "#FFFACD"
+            }
+          ],
+          6: [
+            {
+              name: "Make Your Bed",
+              icon: "🛏️",
+              steps: [
+                "Pull the blanket and sheets up to the pillows",
+                "Smooth out any wrinkles with your hands",
+                "Arrange the pillows at the top",
+                "Step back and look - you did it!"
+              ],
+              color: "#E8F4F8"
+            },
+            {
+              name: "Mop the Kitchen Floor",
+              icon: "🧽",
+              steps: [
+                "Sweep the floor first if needed",
+                "Get your mop and bucket",
+                "Fill bucket with water and cleaner",
+                "Dip mop in water and squeeze out extra",
+                "Mop the floor in sections",
+                "Let floor dry",
+                "Empty bucket and put mop away",
+                "Sparkling floor!"
+              ],
+              color: "#FFF4E6"
+            },
+            {
+              name: "Clean the Microwave",
+              icon: "📦",
+              steps: [
+                "Take out the glass plate",
+                "Wash the plate with soap and water",
+                "Spray inside of microwave with cleaner",
+                "Wipe inside with a cloth",
+                "Put the clean plate back",
+                "Wipe the outside too",
+                "Clean microwave!"
+              ],
+              color: "#E8F8F5"
+            },
+            {
+              name: "Wash Your Bathroom Towels",
+              icon: "🧺",
+              steps: [
+                "Gather all bathroom towels",
+                "Put them in the washing machine",
+                "Add detergent",
+                "Start the wash cycle",
+                "When done, put in dryer or hang to dry",
+                "Fresh clean towels coming!"
+              ],
+              color: "#F0F4FF"
+            },
+            {
+              name: "Wipe All Door Handles",
+              icon: "🚪",
+              steps: [
+                "Get a disinfecting wipe",
+                "Go to each room",
+                "Wipe every door handle",
+                "Don't forget bathroom and fridge!",
+                "Cleaner, healthier home!"
+              ],
+              color: "#FFF0F5"
+            },
+            {
+              name: "Clean Your Bathroom Mirror",
+              icon: "🪞",
+              steps: [
+                "Get glass cleaner and paper towels",
+                "Spray mirror with cleaner",
+                "Wipe in circles",
+                "Keep wiping until no streaks",
+                "Clear reflection!"
+              ],
+              color: "#F5F0FF"
+            },
+            {
+              name: "Organize Under Your Sink",
+              icon: "🚰",
+              steps: [
+                "Take everything out from under sink",
+                "Throw away empty bottles",
+                "Wipe the inside of the cabinet",
+                "Put things back in groups",
+                "Nice and organized!"
+              ],
+              color: "#FFFACD"
+            },
+            {
+              name: "Straighten the Living Room",
+              icon: "🛋️",
+              steps: [
+                "Fluff the couch cushions",
+                "Fold blankets",
+                "Put away any items that don't belong",
+                "Arrange decorations nicely",
+                "Tidy space!"
+              ],
+              color: "#FFE4E1"
+            }
+          ],
+          7: [
+            {
+              name: "Make Your Bed",
+              icon: "🛏️",
+              steps: [
+                "Pull the blanket and sheets up to the pillows",
+                "Smooth out any wrinkles with your hands",
+                "Arrange the pillows at the top",
+                "Step back and look - you did it!"
+              ],
+              color: "#E8F4F8"
+            },
+            {
+              name: "Deep Clean the Fridge",
+              icon: "❄️",
+              steps: [
+                "Take out all food from one shelf",
+                "Check dates - throw away old food",
+                "Spray cleaner on shelf",
+                "Wipe shelf clean",
+                "Put food back",
+                "Do this for each shelf",
+                "Wipe outside of fridge",
+                "Clean fridge!"
+              ],
+              color: "#FFF4E6"
+            },
+            {
+              name: "Vacuum All Rooms",
+              icon: "🏡",
+              steps: [
+                "Get the vacuum cleaner",
+                "Start in bedroom",
+                "Vacuum entire room",
+                "Move to next room",
+                "Keep going until all rooms done",
+                "Put vacuum away",
+                "All rooms clean!"
+              ],
+              color: "#E8F8F5"
+            },
+            {
+              name: "Clean the Bathroom Completely",
+              icon: "🛁",
+              steps: [
+                "Clean the toilet (bowl and outside)",
+                "Clean the sink and counter",
+                "Clean the mirror",
+                "Clean the tub or shower",
+                "Sweep and mop the floor",
+                "Put out fresh towels",
+                "Empty trash",
+                "Bathroom sparkles!"
+              ],
+              color: "#F0F4FF"
+            },
+            {
+              name: "Dust Everything",
+              icon: "🌟",
+              steps: [
+                "Get your duster or cloth",
+                "Dust all surfaces in living room",
+                "Dust all surfaces in bedroom",
+                "Don't forget shelves and electronics",
+                "Dust light fixtures",
+                "So much cleaner!"
+              ],
+              color: "#FFF0F5"
+            },
+            {
+              name: "Do a Load of Laundry",
+              icon: "👔",
+              steps: [
+                "Gather dirty clothes",
+                "Sort by colors if needed",
+                "Put clothes in washing machine",
+                "Add detergent",
+                "Start the wash",
+                "When done, move to dryer or hang",
+                "Fold when dry",
+                "Put away clothes",
+                "Laundry complete!"
+              ],
+              color: "#F5F0FF"
+            },
+            {
+              name: "Clean All Windows",
+              icon: "🪟",
+              steps: [
+                "Get glass cleaner and paper towels",
+                "Spray one window",
+                "Wipe clean in circles",
+                "Check for streaks",
+                "Move to next window",
+                "Do all windows in home",
+                "See the world clearly!"
+              ],
+              color: "#FFFACD"
+            },
+            {
+              name: "Organize Your Closet",
+              icon: "👗",
+              steps: [
+                "Take out clothes you don't wear",
+                "Put them in a donation bag",
+                "Hang up clothes neatly",
+                "Fold items on shelves",
+                "Line up shoes",
+                "Step back and admire your organized closet!"
+              ],
+              color: "#FFE4E1"
+            },
+            {
+              name: "Take Out All Trash and Recycling",
+              icon: "🗑️",
+              steps: [
+                "Go to each room with trash",
+                "Take out all trash bags",
+                "Take them to outside bins",
+                "Put new bags in all trash cans",
+                "Gather all recycling",
+                "Take to recycling bin",
+                "All fresh bags!"
+              ],
+              color: "#E0FFFF"
             }
           ]
         };
