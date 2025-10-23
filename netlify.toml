@@ -1,0 +1,14 @@
+[build]
+  # Base directory is the repo root
+  base = ""
+
+  # No build command needed - it's a static HTML file
+  command = "echo 'No build needed'"
+
+  # Publish the web directory from repo root
+  publish = "web"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

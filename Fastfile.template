@@ -1,0 +1,292 @@
+# Fastlane Configuration Template
+# Copy this to ios/App/fastlane/Fastfile after initializing Fastlane
+
+default_platform(:ios)
+
+platform :ios do
+
+  # ============================================
+  # CONFIGURATION
+  # ============================================
+
+  before_all do
+    # Ensure we're on the correct branch
+    # ensure_git_branch(branch: 'main')
+
+    # Pull latest changes
+    # git_pull
+
+    # Clean build artifacts
+    # clean_build_artifacts
+  end
+
+  # ============================================
+  # BETA LANE (TestFlight)
+  # ============================================
+
+  desc "Upload a new beta build to TestFlight"
+  lane :beta do
+    # Ensure repo is clean (optional)
+    # ensure_git_status_clean
+
+    # Increment build number
+    increment_build_number(
+      xcodeproj: "App.xcodeproj"
+    )
+
+    # Get current version
+    version = get_version_number(xcodeproj: "App.xcodeproj")
+    build = get_build_number(xcodeproj: "App.xcodeproj")
+
+    puts "📦 Building version #{version} (#{build})"
+
+    # Build the app
+    build_app(
+      scheme: "App",
+      export_method: "app-store",
+      clean: true,
+      output_directory: "./build",
+      output_name: "SpeechTherapy-#{version}-#{build}.ipa"
+    )
+
+    # Upload to TestFlight
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true,
+      distribute_external: false, # Set to true for external testers
+      notify_external_testers: false,
+      changelog: "Bug fixes and improvements"
+    )
+
+    # Commit version bump
+    commit_version_bump(
+      message: "Version bump to #{version} (#{build})",
+      xcodeproj: "App.xcodeproj"
+    )
+
+    # Tag the release
+    add_git_tag(
+      tag: "v#{version}-#{build}"
+    )
+
+    # Push to remote
+    # push_to_git_remote
+
+    # Notify team (optional - requires Slack setup)
+    # slack(
+    #   message: "🎉 New beta build #{version} (#{build}) uploaded to TestFlight!",
+    #   channel: "#ios-builds",
+    #   success: true
+    # )
+
+    puts "✅ Successfully uploaded to TestFlight!"
+  end
+
+  # ============================================
+  # RELEASE LANE (App Store)
+  # ============================================
+
+  desc "Submit a new build to the App Store"
+  lane :release do
+    # Ensure repo is clean
+    ensure_git_status_clean
+
+    # Increment version number (or do manually)
+    # increment_version_number(bump_type: "patch")
+
+    # Increment build number
+    increment_build_number(
+      xcodeproj: "App.xcodeproj"
+    )
+
+    version = get_version_number(xcodeproj: "App.xcodeproj")
+    build = get_build_number(xcodeproj: "App.xcodeproj")
+
+    puts "📦 Building release version #{version} (#{build})"
+
+    # Build the app
+    build_app(
+      scheme: "App",
+      export_method: "app-store",
+      clean: true
+    )
+
+    # Upload to App Store
+    upload_to_app_store(
+      submit_for_review: true,
+      automatic_release: false, # Set to true for automatic release after approval
+      force: true,
+      skip_metadata: false,
+      skip_screenshots: false,
+      submission_information: {
+        add_id_info_uses_idfa: false,
+        export_compliance_uses_encryption: false,
+        export_compliance_encryption_updated: false
+      }
+    )
+
+    # Commit version bump
+    commit_version_bump(
+      message: "Release version #{version} (#{build})",
+      xcodeproj: "App.xcodeproj"
+    )
+
+    # Tag the release
+    add_git_tag(
+      tag: "release/v#{version}"
+    )
+
+    # Push to remote
+    push_to_git_remote
+
+    puts "✅ Successfully submitted to App Store!"
+  end
+
+  # ============================================
+  # SCREENSHOTS LANE
+  # ============================================
+
+  desc "Generate screenshots for App Store"
+  lane :screenshots do
+    snapshot(
+      scheme: "App",
+      devices: [
+        "iPhone 15 Pro Max",
+        "iPhone 15",
+        "iPhone 8 Plus",
+        "iPad Pro (12.9-inch)"
+      ],
+      languages: ["en-US"],
+      clear_previous_screenshots: true
+    )
+
+    # Upload to App Store Connect (optional)
+    # upload_to_app_store(
+    #   skip_binary_upload: true,
+    #   skip_metadata: true
+    # )
+  end
+
+  # ============================================
+  # CERTIFICATES LANE (Code Signing)
+  # ============================================
+
+  desc "Sync code signing certificates and profiles"
+  lane :certificates do
+    match(
+      type: "appstore",
+      readonly: true
+    )
+  end
+
+  desc "Create new certificates"
+  lane :create_certs do
+    match(
+      type: "appstore",
+      force_for_new_devices: true
+    )
+  end
+
+  # ============================================
+  # BUILD LANE (Build only, no upload)
+  # ============================================
+
+  desc "Build the app without uploading"
+  lane :build do
+    increment_build_number(
+      xcodeproj: "App.xcodeproj"
+    )
+
+    build_app(
+      scheme: "App",
+      export_method: "app-store"
+    )
+
+    puts "✅ Build complete!"
+  end
+
+  # ============================================
+  # TESTS LANE
+  # ============================================
+
+  desc "Run tests"
+  lane :test do
+    scan(
+      scheme: "App",
+      devices: ["iPhone 15 Pro"]
+    )
+  end
+
+  # ============================================
+  # METADATA LANE
+  # ============================================
+
+  desc "Update App Store metadata"
+  lane :metadata do
+    deliver(
+      submit_for_review: false,
+      skip_binary_upload: true,
+      skip_screenshots: true,
+      force: true
+    )
+  end
+
+  # ============================================
+  # VERSION BUMP LANES
+  # ============================================
+
+  desc "Bump patch version (1.0.0 -> 1.0.1)"
+  lane :bump_patch do
+    increment_version_number(bump_type: "patch")
+  end
+
+  desc "Bump minor version (1.0.0 -> 1.1.0)"
+  lane :bump_minor do
+    increment_version_number(bump_type: "minor")
+  end
+
+  desc "Bump major version (1.0.0 -> 2.0.0)"
+  lane :bump_major do
+    increment_version_number(bump_type: "major")
+  end
+
+  # ============================================
+  # CLEANUP
+  # ============================================
+
+  after_all do |lane|
+    # Clean up build artifacts
+    clean_build_artifacts
+
+    # Notify success
+    puts "🎉 Lane '#{lane}' completed successfully!"
+  end
+
+  error do |lane, exception|
+    # Notify error
+    puts "❌ Error in lane '#{lane}': #{exception.message}"
+
+    # Slack notification (optional)
+    # slack(
+    #   message: "❌ Error in #{lane}: #{exception.message}",
+    #   success: false
+    # )
+  end
+
+end
+
+
+# ============================================
+# USAGE EXAMPLES
+# ============================================
+#
+# Run from ios/App directory:
+#
+# fastlane beta              # Upload to TestFlight
+# fastlane release           # Submit to App Store
+# fastlane screenshots       # Generate screenshots
+# fastlane certificates      # Sync certificates
+# fastlane build             # Build only
+# fastlane test              # Run tests
+# fastlane bump_patch        # Bump patch version
+#
+# ============================================

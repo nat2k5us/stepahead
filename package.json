@@ -1,0 +1,33 @@
+{
+  "name": "stepahead",
+  "version": "1.0.0",
+  "description": "Simple step-by-step household tasks for everyone",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python3 -m http.server 8000",
+    "capacitor:init": "npx cap init",
+    "capacitor:add:ios": "npx cap add ios",
+    "capacitor:sync": "npx cap sync",
+    "capacitor:open:ios": "npx cap open ios",
+    "capacitor:copy": "npx cap copy",
+    "ios:build": "npx cap sync && npx cap open ios",
+    "fastlane:init": "cd ios/App && fastlane init",
+    "fastlane:beta": "cd ios/App && fastlane beta",
+    "fastlane:release": "cd ios/App && fastlane release"
+  },
+  "keywords": [
+    "tasks,household,daily,productivity,autism,memory,organization"
+  ],
+  "author": "Natraj Bontha",
+  "license": "MIT",
+  "devDependencies": {
+    "@capacitor/cli": "^5.5.1"
+  },
+  "dependencies": {
+    "@capacitor-community/speech-recognition": "^5.1.0",
+    "@capacitor/android": "^5.7.8",
+    "@capacitor/core": "^5.5.1",
+    "@capacitor/ios": "^5.5.1",
+    "firebase": "^12.4.0"
+  }
+}

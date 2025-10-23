@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - StepAhead</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+            background: #f5f5f7;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1d1d1f;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #667eea;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #764ba2;
+        }
+        .meta {
+            background: #f5f5f7;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .highlight {
+            background: #fff9e6;
+            border-left: 4px solid #ffd700;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        ul {
+            line-height: 1.8;
+        }
+        a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .contact {
+            background: #e6f2ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #e5e5e7;
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Privacy Policy for StepAhead</h1>
+
+        <div class="meta">
+            <p><strong>Last Updated:</strong> October 21, 2025</p>
+            <p><strong>Effective Date:</strong> October 21, 2025</p>
+        </div>
+
+        <h2>Introduction</h2>
+        <p>StepAhead ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application.</p>
+        <p><strong>Please read this privacy policy carefully.</strong> If you do not agree with the terms of this privacy policy, please do not access the application.</p>
+
+        <hr>
+
+        <h2>Information We Collect</h2>
+
+        <h3>Personal Information</h3>
+        <p>When you register for StepAhead, we collect:</p>
+        <ul>
+            <li>Email address</li>
+            <li>Display name/username</li>
+            <li>Profile information (optional)</li>
+        </ul>
+
+        <h3>Speech and Reading Data</h3>
+        <ul>
+            <li>Reading accuracy scores</li>
+            <li>Speech recognition results (processed on-device)</li>
+            <li>Practice session history</li>
+            <li>Progress metrics</li>
+        </ul>
+
+        <h3>Automatically Collected Information</h3>
+        <ul>
+            <li>Device information (model, OS version)</li>
+            <li>Usage statistics</li>
+            <li>Performance data</li>
+            <li>Crash reports</li>
+        </ul>
+
+        <hr>
+
+        <h2>How We Use Your Information</h2>
+        <p>We use your information to:</p>
+        <ol>
+            <li><strong>Provide Services:</strong> Enable speech recognition and reading practice</li>
+            <li><strong>Track Progress:</strong> Monitor your improvement over time</li>
+            <li><strong>Leaderboard:</strong> Display anonymous rankings (optional)</li>
+            <li><strong>Improve App:</strong> Analyze usage patterns and fix bugs</li>
+            <li><strong>Communication:</strong> Send important updates and notifications</li>
+            <li><strong>Security:</strong> Prevent fraud and ensure account security</li>
+        </ol>
+
+        <hr>
+
+        <h2>Speech Recognition and Privacy</h2>
+        <div class="highlight">
+            <p><strong>Important:</strong> Speech recognition is processed <strong>on-device</strong> using Apple's native speech recognition API.</p>
+            <ul>
+                <li><strong>No audio recordings are stored</strong> on our servers</li>
+                <li>Speech is <strong>not transmitted</strong> to our servers</li>
+                <li>Only text results (words recognized) are analyzed</li>
+                <li>All processing happens <strong>locally on your device</strong></li>
+            </ul>
+            <p>This ensures maximum privacy for your speech data.</p>
+        </div>
+
+        <hr>
+
+        <h2>Data Storage and Security</h2>
+
+        <h3>Security Measures</h3>
+        <ul>
+            <li>End-to-end encryption for user data</li>
+            <li>Secure Firebase authentication</li>
+            <li>HTTPS for all network communication</li>
+            <li>Regular security audits</li>
+        </ul>
+
+        <h3>Data Retention</h3>
+        <ul>
+            <li><strong>Account data:</strong> Retained while account is active</li>
+            <li><strong>Practice history:</strong> Retained for progress tracking</li>
+            <li><strong>Leaderboard data:</strong> Anonymized, retained indefinitely</li>
+            <li>You can request deletion at any time</li>
+        </ul>
+
+        <hr>
+
+        <h2>Third-Party Services</h2>
+        <p>We use the following third-party services:</p>
+
+        <h3>Firebase (Google)</h3>
+        <ul>
+            <li><strong>Purpose:</strong> Authentication, database, analytics</li>
+            <li><strong>Data Shared:</strong> Email, username, practice scores</li>
+            <li><strong>Privacy Policy:</strong> <a href="https://firebase.google.com/support/privacy" target="_blank">https://firebase.google.com/support/privacy</a></li>
+        </ul>
+
+        <h3>Apple Speech Recognition</h3>
+        <ul>
+            <li><strong>Purpose:</strong> On-device speech-to-text</li>
+            <li><strong>Data Shared:</strong> None (processed locally)</li>
+            <li><strong>Privacy Policy:</strong> <a href="https://www.apple.com/privacy/" target="_blank">https://www.apple.com/privacy/</a></li>
+        </ul>
+
+        <hr>
+
+        <h2>Children's Privacy</h2>
+        <p>StepAhead is suitable for users aged 4+. We do not knowingly collect personal information from children under 13 without parental consent.</p>
+        <p>If you are a parent and believe your child has provided us with personal information, please contact us to request deletion.</p>
+
+        <hr>
+
+        <h2>Your Privacy Rights</h2>
+        <p>You have the right to:</p>
+        <ol>
+            <li><strong>Access:</strong> Request a copy of your data</li>
+            <li><strong>Correction:</strong> Update inaccurate information</li>
+            <li><strong>Deletion:</strong> Request deletion of your account and data</li>
+            <li><strong>Export:</strong> Download your data in a portable format</li>
+            <li><strong>Opt-Out:</strong> Disable leaderboard participation</li>
+        </ol>
+        <p>To exercise these rights, email us at: <a href="mailto:ispeakclear2025@gmail.com">ispeakclear2025@gmail.com</a></p>
+
+        <hr>
+
+        <h2>Data Sharing and Disclosure</h2>
+        <p>We <strong>DO NOT</strong> sell your personal information.</p>
+        <p>We may share data only in these limited circumstances:</p>
+        <ul>
+            <li><strong>With your consent</strong></li>
+            <li><strong>Legal requirements:</strong> If required by law</li>
+            <li><strong>Service providers:</strong> Trusted partners who assist in app operation</li>
+            <li><strong>Business transfers:</strong> If the app is sold or merged</li>
+        </ul>
+
+        <hr>
+
+        <h2>International Users</h2>
+        <p>Your information may be transferred to and stored in the United States or other countries where Firebase servers are located. By using StepAhead, you consent to this transfer.</p>
+
+        <hr>
+
+        <h2>Changes to This Policy</h2>
+        <p>We may update this Privacy Policy from time to time. We will notify you of changes by:</p>
+        <ul>
+            <li>Updating the "Last Updated" date</li>
+            <li>Sending an in-app notification</li>
+            <li>Email notification for material changes</li>
+        </ul>
+        <p>Your continued use after changes indicates acceptance.</p>
+
+        <hr>
+
+        <h2>Contact Us</h2>
+        <div class="contact">
+            <p>If you have questions about this Privacy Policy:</p>
+            <p><strong>Email:</strong> <a href="mailto:ispeakclear2025@gmail.com">ispeakclear2025@gmail.com</a><br>
+            <strong>Address:</strong> 4829 Monte Vista Ln, Mckinney, TX 75070, USA<br>
+            <strong>Phone:</strong> <a href="tel:+18179654291">+1 (817) 965-4291</a><br>
+            <strong>Website:</strong> <a href="http://www.effysoft.com" target="_blank">www.effysoft.com</a></p>
+        </div>
+
+        <hr>
+
+        <h2>California Privacy Rights (CCPA)</h2>
+        <p>California residents have additional rights under the California Consumer Privacy Act:</p>
+        <ul>
+            <li>Right to know what personal information is collected</li>
+            <li>Right to request deletion</li>
+            <li>Right to opt-out of sale (we don't sell data)</li>
+            <li>Right to non-discrimination</li>
+        </ul>
+        <p>Contact us to exercise these rights.</p>
+
+        <hr>
+
+        <h2>European Privacy Rights (GDPR)</h2>
+        <p>For users in the European Union, we comply with GDPR:</p>
+        <ul>
+            <li><strong>Legal basis:</strong> Consent and legitimate interests</li>
+            <li><strong>Data controller:</strong> EffySoft</li>
+            <li><strong>DPO contact:</strong> <a href="mailto:ispeakclear2025@gmail.com">ispeakclear2025@gmail.com</a></li>
+        </ul>
+
+        <hr>
+
+        <p><strong>By using StepAhead, you acknowledge that you have read and understood this Privacy Policy.</strong></p>
+
+        <div class="meta">
+            <p><em>This privacy policy was last updated on October 21, 2025 and is effective as of October 21, 2025.</em></p>
+        </div>
+    </div>
+</body>
+</html>
