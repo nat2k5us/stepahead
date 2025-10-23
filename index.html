@@ -1384,6 +1384,75 @@
         };
         console.log('✅ Task data loaded:', Object.keys(tasks).length, 'days');
 
+        // STEPAHEAD: Navigation state
+        let currentView = 'home'; // 'home' or 'task'
+        let currentTask = null;
+
+        // STEPAHEAD: Show task step-by-step view
+        function showTaskView(day, taskIndex) {
+            console.log('📋 showTaskView called:', day, taskIndex);
+
+            const homeTab = document.getElementById('homeTab');
+            if (!homeTab) return;
+
+            const task = tasks[day][taskIndex];
+            currentTask = { day, taskIndex, task };
+            currentView = 'task';
+
+            const html = `
+                <div class="p-4">
+                    <!-- Back button -->
+                    <button onclick="showHomeView()" class="flex items-center gap-2 mb-4 text-blue-600 hover:text-blue-800">
+                        <span>←</span>
+                        <span>Back to Tasks</span>
+                    </button>
+
+                    <!-- Task header -->
+                    <div class="bg-white rounded-lg shadow-lg p-6 mb-4">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="text-4xl">${task.icon}</span>
+                            <h2 class="text-2xl font-bold">${task.name}</h2>
+                        </div>
+                        <div class="text-gray-600">${task.steps.length} steps to complete</div>
+                    </div>
+
+                    <!-- Steps list -->
+                    <div class="space-y-3">
+                        ${task.steps.map((step, index) => `
+                            <div class="bg-white rounded-lg shadow p-4">
+                                <div class="flex gap-3">
+                                    <div class="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">
+                                        ${index + 1}
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-gray-800">${step}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <!-- Complete button -->
+                    <div class="mt-6">
+                        <button onclick="showHomeView()" class="w-full bg-green-500 text-white font-bold py-4 rounded-lg hover:bg-green-600">
+                            ✓ Mark Complete
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            homeTab.innerHTML = html;
+            console.log('✅ Task view rendered');
+        }
+
+        // STEPAHEAD: Show home view (task list)
+        function showHomeView() {
+            console.log('🏠 showHomeView called');
+            currentView = 'home';
+            currentTask = null;
+            renderHomeTab();
+        }
+
         // STEPAHEAD: Render function to display all 7 days of tasks
         function renderHomeTab() {
             console.log('🏠 renderHomeTab called');
@@ -1411,13 +1480,14 @@
                     <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
                         <h3 class="font-bold mb-3 text-xl">Today - ${dayNames[todayIndex - 1]}</h3>
                         <div class="space-y-2">
-                            ${todayTasks.map(task => `
-                                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded hover:bg-gray-100">
+                            ${todayTasks.map((task, index) => `
+                                <div onclick="showTaskView(${todayIndex}, ${index})" class="flex items-center gap-3 p-3 bg-gray-50 rounded hover:bg-gray-100 cursor-pointer">
                                     <span class="text-2xl">${task.icon}</span>
                                     <div>
                                         <div class="font-semibold">${task.name}</div>
                                         <div class="text-sm text-gray-600">${task.steps.length} steps</div>
                                     </div>
+                                    <div class="ml-auto text-gray-400">→</div>
                                 </div>
                             `).join('')}
                         </div>
