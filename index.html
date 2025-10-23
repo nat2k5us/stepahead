@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>StepAhead</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '{{PRIMARY_COLOR}}',
+                        'primary-dark': '#764ba2'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* iOS Safe Area Support */
+        :root {
+            --safe-area-inset-top: env(safe-area-inset-top);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+        }
+
+        html {
+            background: #667eea; /* Fallback for default theme */
+            min-height: 100vh;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            width: 100%;
+            overflow-x: hidden;
+            background: #667eea; /* Fallback color */
+            position: relative;
+        }
+
+        /* CRITICAL: Remove all default backgrounds */
+        * {
+            box-sizing: border-box;
+        }
+
+        /* Mobile-only styles */
+        @media (max-width: 768px) {
+            body.app-active {
+                overflow: hidden;
+                height: 100vh;
+                position: fixed;
+                width: 100%;
+            }
+
+            #mainAppContainer {
+                height: 100vh;
+                display: flex;
+                flex-direction: column;
+            }
+        }
+
+        /* Mobile Layout - Transparent to show body gradient */
+        .mobile-layout {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            background: transparent !important;
+        }
+
+        /* Main app container with full gradient - SAME AS LOGIN SCREEN */
+        #mainAppContainer {
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        /* Apply theme gradient to html, body AND main container for COMPLETE coverage */
+        html:has(body.theme-default),
+        body.theme-default,
+        body.theme-default #mainAppContainer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        html:has(body.theme-ocean),
+        body.theme-ocean,
+        body.theme-ocean #mainAppContainer {
+            background: linear-gradient(135deg, #2E3192 0%, #1BFFFF 100%);
+        }
+        html:has(body.theme-sunset),
+        body.theme-sunset,
+        body.theme-sunset #mainAppContainer {
+            background: linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 100%);
+        }
+        html:has(body.theme-forest),
+        body.theme-forest,
+        body.theme-forest #mainAppContainer {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+        }
+        html:has(body.theme-dark),
+        body.theme-dark,
+        body.theme-dark #mainAppContainer {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        .mobile-app-container {
+            background: transparent !important;
+        }
+
+        .tab-content,
+        .tab-content > div,
+        .mobile-content {
+            background: transparent !important;
+        }
+
+        /* FLOATING Header - NO fixed bar, just floating like debug controls */
+        .mobile-header {
+            position: fixed;
+            top: env(safe-area-inset-top);
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            color: white;
+            font-size: 1.25rem;
+            font-weight: bold;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            pointer-events: none;
+            background: transparent;
+        }
+
+        .mobile-header > * {
+            pointer-events: auto;
+        }
+
+        /* Content Area */
+        .mobile-content {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 1rem;
+            padding-top: calc(3.5rem + env(safe-area-inset-top)); /* Space for floating header */
+            padding-bottom: calc(90px + env(safe-area-inset-bottom)); /* Space for floating navbar */
+        }
+
+        /* FLOATING Bottom Navigation - Rounded pill floating like debug controls */
+        .mobile-bottom-nav {
+            position: fixed;
+            bottom: calc(6px + env(safe-area-inset-bottom));
+            left: 24px;
+            right: 24px;
+            display: flex !important;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 0.5rem 0.25rem;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.35rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: rgba(255, 255, 255, 0.7);
+            min-height: 44px;
+        }
+
+        .nav-item.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 0.5rem;
+        }
+
+        .nav-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.15rem;
+            transition: transform 0.2s;
+        }
+
+        .nav-item.active .nav-icon {
+            transform: scale(1.05);
+        }
+
+        .nav-item > div:not(.nav-icon) {
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        /* Debug Controls - Floating Panel */
+        .debug-controls {
+            position: fixed;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 12px;
+            padding: 15px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .debug-controls.hidden {
+            display: none;
+        }
+
+        .debug-btn {
+            width: 50px;
+            height: 50px;
+            background: #667eea;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .debug-btn:active {
+            transform: scale(0.95);
+            background: #5a67d8;
+        }
+
+        .debug-toggle {
+            position: fixed;
+            top: 100px;
+            right: 10px;
+            background: rgba(255, 0, 0, 0.7);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 10000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .debug-info {
+            color: white;
+            font-size: 11px;
+            text-align: center;
+            margin-top: 5px;
+            font-family: monospace;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Login Screen */
+        .login-screen {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .login-logo {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .login-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 2rem;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: {{PRIMARY_COLOR}};
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 1rem;
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-link {
+            color: {{PRIMARY_COLOR}};
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Theme Variables - Default (Purple) */
+        body.theme-default {
+            --theme-primary: #667eea;
+            --theme-secondary: #764ba2;
+            --theme-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --theme-light: rgba(102, 126, 234, 0.1);
+            --theme-text: #667eea;
+        }
+        body.theme-ocean {
+            --theme-primary: #2E3192;
+            --theme-secondary: #1BFFFF;
+            --theme-gradient: linear-gradient(135deg, #2E3192 0%, #1BFFFF 100%);
+            --theme-light: rgba(27, 255, 255, 0.1);
+            --theme-text: #2E3192;
+        }
+        body.theme-sunset {
+            --theme-primary: #FA8BFF;
+            --theme-secondary: #2BD2FF;
+            --theme-gradient: linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 100%);
+            --theme-light: rgba(250, 139, 255, 0.1);
+            --theme-text: #FA8BFF;
+        }
+        body.theme-forest {
+            --theme-primary: #56ab2f;
+            --theme-secondary: #a8e063;
+            --theme-gradient: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+            --theme-light: rgba(86, 171, 47, 0.1);
+            --theme-text: #56ab2f;
+        }
+        body.theme-dark {
+            --theme-primary: #1a1a2e;
+            --theme-secondary: #16213e;
+            --theme-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            --theme-light: rgba(26, 26, 46, 0.1);
+            --theme-text: #1a1a2e;
+        }
+
+        /* Apply theme to components */
+        .login-screen {
+            background: var(--theme-gradient);
+        }
+
+        .login-button {
+            background: var(--theme-gradient);
+        }
+
+        .nav-item.active {
+            color: var(--theme-text);
+            background: var(--theme-light);
+        }
+
+        /* Theme for headings - white on gradient background */
+        .tab-content h2,
+        .tab-content h3 {
+            color: white !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            font-weight: 700;
+        }
+
+        /* Theme for buttons */
+        button.login-button:hover {
+            opacity: 0.9;
+        }
+
+        /* Theme for active states */
+        .nav-icon {
+            transition: all 0.3s ease;
+        }
+
+        .nav-item.active .nav-icon {
+            filter: brightness(1.1);
+        }
+
+        /* Theme for links and interactive elements */
+        .login-link {
+            color: var(--theme-text);
+        }
+
+        /* Theme for toggle switches */
+        input[type="checkbox"]:checked + div {
+            background: var(--theme-primary) !important;
+        }
+
+        /* Theme for focus states */
+        .login-input:focus {
+            border-color: var(--theme-primary);
+            box-shadow: 0 0 0 3px var(--theme-light);
+        }
+
+        /* Theme for cards with hover effects */
+        .bg-white.rounded-xl.shadow {
+            transition: box-shadow 0.3s ease, transform 0.2s ease;
+        }
+
+        .bg-white.rounded-xl.shadow:hover {
+            box-shadow: 0 10px 25px var(--theme-light);
+        }
+
+        /* Theme for the selected theme button border */
+        .theme-selected {
+            border: 3px solid var(--theme-primary) !important;
+            box-shadow: 0 0 0 2px var(--theme-light), 0 4px 12px rgba(0,0,0,0.2) !important;
+        }
+
+        /* Gradients now applied to #mainAppContainer instead of body */
+
+
+        /* Theme cards with semi-transparent white/blur */
+        .bg-white.rounded-xl,
+        .bg-white.rounded-lg {
+            background: rgba(255, 255, 255, 0.9) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+        }
+
+        /* All main section headers white on gradient */
+        .tab-content h2 {
+            color: white !important;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Card headers stay dark */
+        .bg-white h3 {
+            color: #1f2937 !important;
+            text-shadow: none !important;
+        }
+
+        /* Logout button themed */
+        .bg-red-500 {
+            background: rgba(239, 68, 68, 0.95) !important;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Theme for text accents */
+        .text-purple, .font-bold.text-purple {
+            color: var(--theme-text) !important;
+        }
+
+        /* Theme for dividers */
+        .border-gray-200 {
+            border-color: var(--theme-light) !important;
+        }
+
+        /* Theme transitions */
+        * {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        /* Don't transition positions and transforms */
+        .nav-item, .mobile-bottom-nav, .debug-controls {
+            transition: background-color 0.3s ease, color 0.3s ease !important;
+        }
+
+        /* Theme for Save Changes button */
+        button.login-button, .login-button {
+            background: var(--theme-gradient);
+            border: none;
+            box-shadow: 0 4px 12px var(--theme-light);
+        }
+
+        button.login-button:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 6px var(--theme-light);
+        }
+
+        /* Theme for profile display text */
+        #profileDisplayName {
+            color: #1f2937 !important;
+        }
+
+        /* Card headers stay dark for readability on white cards */
+        .bg-white h3.text-lg.font-semibold {
+            color: #1f2937 !important;
+            text-shadow: none;
+        }
+    </style>
+</head>
+<body class="theme-default">
+
+    <!-- Login Screen -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-container">
+            <!-- Logo and Title -->
+            <div style="text-align: center;">
+                <div class="login-logo">🏠</div>
+                <h1 class="login-title">StepAhead</h1>
+            </div>
+
+            <!-- Error Message -->
+            <div id="errorMessage" class="error-message hidden"></div>
+
+            <!-- Login Form -->
+            <div id="loginForm">
+                <input type="email" id="loginEmail" placeholder="EMAIL" class="login-input" autocomplete="email">
+                <input type="password" id="loginPassword" placeholder="PASSWORD" class="login-input" autocomplete="current-password">
+                <button onclick="signIn()" class="login-button">SIGN IN</button>
+                <div style="text-align: center; color: #6b7280;">
+                    Don't have an account? <a href="#" onclick="showSignup(); return false;" class="login-link">Create one</a>
+                </div>
+            </div>
+
+            <!-- Signup Form -->
+            <div id="signupForm" class="hidden">
+                <input type="text" id="signupName" placeholder="FULL NAME" class="login-input" autocomplete="name">
+                <input type="email" id="signupEmail" placeholder="EMAIL" class="login-input" autocomplete="email">
+                <input type="password" id="signupPassword" placeholder="PASSWORD" class="login-input" autocomplete="new-password">
+                <button onclick="signUp()" class="login-button">CREATE ACCOUNT</button>
+                <div style="text-align: center; color: #6b7280;">
+                    Already have an account? <a href="#" onclick="showLogin(); return false;" class="login-link">Sign in</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="mainAppContainer" class="hidden">
+        <!-- Mobile Layout -->
+        <div class="mobile-layout">
+            <!-- Header -->
+            <div class="mobile-header">
+                <div class="flex justify-between items-center">
+                    <h1 class="text-xl font-bold">StepAhead</h1>
+                    <div class="text-sm">
+                        Welcome, <span id="userName">User</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="mobile-content">
+                <!-- Tab Content Areas -->
+                <div class="tab-content active" id="homeTab">
+                    <div class="p-4">
+                        <h2 class="text-2xl font-bold mb-4">Home</h2>
+                        <div class="bg-white rounded-lg shadow p-6 mb-4">
+                            <p class="text-gray-700 mb-4">Welcome to TacoTalk!</p>
+                            <p class="text-gray-600">This is your Home tab. Add your custom content here.</p>
+                        </div>
+
+                        <!-- Add your custom content for this tab -->
+                        <div class="bg-gray-50 rounded-lg p-6">
+                            <h3 class="font-semibold mb-2">Getting Started</h3>
+                            <ul class="list-disc list-inside text-gray-600 space-y-1">
+                                <li>Customize this tab content</li>
+                                <li>Add your app features</li>
+                                <li>Build something amazing!</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="exploreTab">
+                    <div class="p-4">
+                        <h2 class="text-2xl font-bold mb-4">Explore</h2>
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <p class="text-gray-700">This is your Explore tab.</p>
+                            <p class="text-gray-600 mt-2">Customize it with your app's features.</p>
+                        </div>
+                        <!-- Add your custom content for this tab -->
+                    </div>
+                </div>
+
+                <div class="tab-content" id="favoritesTab">
+                    <div class="p-4">
+                        <h2 class="text-2xl font-bold mb-4">Favorites</h2>
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <p class="text-gray-700">Favorites content goes here.</p>
+                            <p class="text-gray-600 mt-2">Build your features in this section.</p>
+                        </div>
+                        <!-- Add your custom content for this tab -->
+                    </div>
+                </div>
+
+                <div class="tab-content" id="profileTab">
+                    <div class="p-4" style="padding-bottom: 100px;">
+                        <!-- Profile Header -->
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-xl font-bold">Profile</h2>
+                            <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold text-sm shadow-lg hover:bg-red-600">
+                                Logout
+                            </button>
+                        </div>
+
+                        <!-- User Info Card -->
+                        <div class="bg-white rounded-xl shadow mb-4 p-4">
+                            <div class="text-center mb-4">
+                                <div class="text-4xl mb-2">👤</div>
+                                <div class="text-xl font-bold text-gray-900" id="profileDisplayName">Developer</div>
+                                <div class="text-sm text-gray-600 mt-1" id="profileDisplayEmail">dev@test.local</div>
+                            </div>
+
+                            <!-- Editable fields -->
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Display Name</label>
+                                <input type="text" id="profileName" class="login-input" placeholder="Your name">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                <input type="email" id="profileEmail" class="login-input" readonly style="background: #f3f4f6;">
+                            </div>
+                            <button onclick="saveProfile()" class="login-button">Save Changes</button>
+                        </div>
+
+                        <!-- App Settings Card -->
+                        <div class="bg-white rounded-xl shadow p-4 mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">⚙️ App Settings</h3>
+
+                            <!-- Theme Selector -->
+                            <div class="mb-4">
+                                <label class="block text-sm font-semibold text-gray-700 mb-3">🎨 Theme</label>
+                                <div class="flex justify-center gap-3">
+                                    <div onclick="changeTheme('theme-default')" class="cursor-pointer relative" id="theme-default-btn">
+                                        <div class="w-12 h-12 rounded-full" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: 3px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.15);"></div>
+                                    </div>
+                                    <div onclick="changeTheme('theme-ocean')" class="cursor-pointer relative" id="theme-ocean-btn">
+                                        <div class="w-12 h-12 rounded-full" style="background: linear-gradient(135deg, #2E3192 0%, #1BFFFF 100%); border: 3px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.15);"></div>
+                                    </div>
+                                    <div onclick="changeTheme('theme-sunset')" class="cursor-pointer relative" id="theme-sunset-btn">
+                                        <div class="w-12 h-12 rounded-full" style="background: linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 100%); border: 3px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.15);"></div>
+                                    </div>
+                                    <div onclick="changeTheme('theme-forest')" class="cursor-pointer relative" id="theme-forest-btn">
+                                        <div class="w-12 h-12 rounded-full" style="background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%); border: 3px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.15);"></div>
+                                    </div>
+                                    <div onclick="changeTheme('theme-dark')" class="cursor-pointer relative" id="theme-dark-btn">
+                                        <div class="w-12 h-12 rounded-full" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border: 3px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.15);"></div>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-600 mt-3 text-center">Choose your app theme</p>
+                            </div>
+
+                            <!-- Notifications Toggle -->
+                            <div class="mb-4 pt-4 border-t border-gray-200">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700">🔔 Notifications</label>
+                                        <p class="text-xs text-gray-600 mt-1">Enable push notifications</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="notificationsToggle" onchange="toggleNotifications(this.checked)" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Dark Mode Toggle -->
+                            <div class="mb-4 pt-4 border-t border-gray-200">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700">🌙 Dark Mode</label>
+                                        <p class="text-xs text-gray-600 mt-1">Use dark theme</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode(this.checked)" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- System Info Card -->
+                        <div class="bg-white rounded-xl shadow p-4 mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">ℹ️ System Info</h3>
+                            <div class="space-y-2 text-sm text-gray-600">
+                                <div class="flex justify-between py-2 border-b border-gray-200">
+                                    <span>App Version</span>
+                                    <span class="font-semibold text-gray-900">1.0.0</span>
+                                </div>
+                                <div class="flex justify-between py-2 border-b border-gray-200">
+                                    <span>Build</span>
+                                    <span class="font-semibold text-gray-900">Template v1</span>
+                                </div>
+                                <div class="flex justify-between py-2">
+                                    <span>Platform</span>
+                                    <span class="font-semibold text-gray-900" id="platformInfo">iOS</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Add your custom profile/settings content -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Bottom Navigation -->
+            <div class="mobile-bottom-nav">
+                <div class="nav-item active" onclick="switchTab('home', this)">
+                    <div class="nav-icon">🏠</div>
+                    <div>Home</div>
+                </div>
+                <div class="nav-item" onclick="switchTab('explore', this)">
+                    <div class="nav-icon">🔍</div>
+                    <div>Explore</div>
+                </div>
+                <div class="nav-item" onclick="switchTab('favorites', this)">
+                    <div class="nav-icon">⭐</div>
+                    <div>Favorites</div>
+                </div>
+                <div class="nav-item" onclick="switchTab('profile', this)">
+                    <div class="nav-icon">👤</div>
+                    <div>Profile</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Debug Controls Toggle Button -->
+        <button class="debug-toggle" onclick="toggleDebugControls()">🐛</button>
+
+        <!-- Debug Controls Panel -->
+        <div class="debug-controls hidden" id="debugControls">
+            <button class="debug-btn" onclick="moveNavbar('up')">⬆️</button>
+            <button class="debug-btn" onclick="moveNavbar('down')">⬇️</button>
+            <button class="debug-btn" onclick="resetNavbar()">↩️</button>
+            <div class="debug-info" id="debugInfo">Bottom: 0px</div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyTest123FakeTacoKey456",
+          authDomain: "tacotalk-firebase-42.firebaseapp.com",
+          projectId: "tacotalk-firebase-42",
+          storageBucket: "tacotalk-firebase-42.firebasestorage.app",
+          messagingSenderId: "987654321",
+          appId: "1:987654321:web:abc123tacotest"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Make functions globally available
+        window.auth = auth;
+        window.db = db;
+        window.doc = doc;
+        window.setDoc = setDoc;
+        window.getDoc = getDoc;
+        window.signOut = signOut;
+        window.updateProfile = updateProfile;
+        window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+
+        // Auth state listener
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // User is signed in
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('mainAppContainer').classList.remove('hidden');
+                document.body.classList.add('app-active');
+
+                // Load user profile
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                const userName = userDoc.exists() ? userDoc.data().displayName : user.email.split('@')[0];
+                document.getElementById('userName').textContent = userName;
+                document.getElementById('profileName').value = userName;
+                document.getElementById('profileEmail').value = user.email;
+            } else {
+                // User is signed out
+                document.getElementById('loginScreen').classList.remove('hidden');
+                document.getElementById('mainAppContainer').classList.add('hidden');
+                document.body.classList.remove('app-active');
+            }
+        });
+    </script>
+
+    <script>
+        // STEPAHEAD: Task data structure (3 days for testing)
+        const tasks = {
+          1: [
+            {
+              name: "Make Your Bed",
+              icon: "🛏️",
+              steps: [
+                "Pull the blanket and sheets up to the pillows",
+                "Smooth out any wrinkles with your hands",
+                "Arrange the pillows at the top",
+                "Step back and look - you did it!"
+              ],
+              color: "#E8F4F8"
+            },
+            {
+              name: "Wash Your Breakfast Dishes",
+              icon: "🍽️",
+              steps: [
+                "Scrape any leftover food into the trash",
+                "Turn on warm water",
+                "Put dish soap on a sponge",
+                "Scrub each dish clean",
+                "Rinse with clean water",
+                "Place in the dish rack to dry"
+              ],
+              color: "#FFF4E6"
+            }
+          ],
+          2: [
+            {
+              name: "Make Your Bed",
+              icon: "🛏️",
+              steps: [
+                "Pull the blanket and sheets up to the pillows",
+                "Smooth out any wrinkles with your hands",
+                "Arrange the pillows at the top",
+                "Step back and look - you did it!"
+              ],
+              color: "#E8F4F8"
+            }
+          ],
+          3: [
+            {
+              name: "Make Your Bed",
+              icon: "🛏️",
+              steps: [
+                "Pull the blanket and sheets up to the pillows",
+                "Smooth out any wrinkles with your hands",
+                "Arrange the pillows at the top",
+                "Step back and look - you did it!"
+              ],
+              color: "#E8F4F8"
+            }
+          ]
+        };
+        console.log('✅ Task data loaded:', Object.keys(tasks).length, 'days');
+
+        // STEPAHEAD: Simple render function to display tasks
+        function renderHomeTab() {
+            console.log('🏠 renderHomeTab called');
+
+            const homeTab = document.getElementById('homeTab');
+            if (!homeTab) {
+                console.error('❌ homeTab not found');
+                return;
+            }
+
+            const html = `
+                <div class="p-4">
+                    <h2 class="text-2xl font-bold mb-4">📅 My Tasks</h2>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="font-bold mb-2">Monday's Tasks</h3>
+                        <div class="space-y-2">
+                            ${tasks[1].map(task => `
+                                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded">
+                                    <span class="text-2xl">${task.icon}</span>
+                                    <div>
+                                        <div class="font-semibold">${task.name}</div>
+                                        <div class="text-sm text-gray-600">${task.steps.length} steps</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            homeTab.innerHTML = html;
+            console.log('✅ Home tab rendered');
+        }
+
+        // Call renderHomeTab when app loads
+        window.addEventListener('load', () => {
+            console.log('🌍 Window loaded, calling renderHomeTab');
+            renderHomeTab();
+        });
+
+        // Tab switching
+        function switchTab(tabId, element) {
+            // Remove active class from all nav items
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+
+            // Add active class to clicked item
+            element.classList.add('active');
+
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            // Show selected tab content
+            document.getElementById(tabId + 'Tab').classList.add('active');
+        }
+
+        // Debug Controls - Navbar Position Adjustment
+        let navbarBottomOffset = 0;
+
+        function toggleDebugControls() {
+            const controls = document.getElementById('debugControls');
+            controls.classList.toggle('hidden');
+        }
+
+        function moveNavbar(direction) {
+            const navbar = document.querySelector('.mobile-bottom-nav');
+            const step = 2; // Move 2px at a time
+
+            if (direction === 'up') {
+                navbarBottomOffset += step;
+            } else if (direction === 'down') {
+                navbarBottomOffset -= step;
+            }
+
+            // Preserve all existing styles
+            navbar.style.bottom = navbarBottomOffset + 'px';
+            navbar.style.position = 'fixed';
+            navbar.style.left = '24px';
+            navbar.style.right = '24px';
+            navbar.style.borderRadius = '20px';
+            navbar.style.padding = '0.5rem 0.25rem';
+
+            updateDebugInfo();
+        }
+
+        function resetNavbar() {
+            const navbar = document.querySelector('.mobile-bottom-nav');
+            navbarBottomOffset = 0;
+            navbar.style.bottom = '';
+            navbar.style.position = '';
+            navbar.style.left = '';
+            navbar.style.right = '';
+            navbar.style.borderRadius = '';
+            navbar.style.padding = '';
+            updateDebugInfo();
+        }
+
+        function updateDebugInfo() {
+            const navbar = document.querySelector('.mobile-bottom-nav');
+            const rect = navbar.getBoundingClientRect();
+            const computedStyle = window.getComputedStyle(navbar);
+
+            document.getElementById('debugInfo').innerHTML = `
+                Bottom: ${navbarBottomOffset}px<br>
+                Visible: ${computedStyle.display}<br>
+                Y: ${Math.round(rect.top)}px
+            `;
+        }
+
+        // Show signup form
+        function showSignup() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('signupForm').classList.remove('hidden');
+            document.getElementById('errorMessage').classList.add('hidden');
+        }
+
+        // Show login form
+        function showLogin() {
+            document.getElementById('signupForm').classList.add('hidden');
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('errorMessage').classList.add('hidden');
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+
+        // Sign in
+        async function signIn() {
+            // Clear any error messages first
+            document.getElementById('errorMessage').classList.add('hidden');
+
+            // Developer/Test Mode - Bypass Firebase for local development
+            // Just click Sign In to enter the app without credentials
+            console.log("🔓 Dev mode - bypassing authentication");
+            bypassFirebaseLogin();
+            return;
+
+            // Production Firebase authentication (currently disabled for dev)
+            // Uncomment below for production:
+            /*
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                showError('Please enter email and password');
+                return;
+            }
+
+            try {
+                await window.signInWithEmailAndPassword(window.auth, email, password);
+            } catch (error) {
+                showError(error.message);
+            }
+            */
+        }
+
+        // Bypass Firebase login for development/testing
+        function bypassFirebaseLogin() {
+            // Hide login, show app
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainAppContainer').classList.remove('hidden');
+            document.body.classList.add('app-active');
+
+            // Set mock user data
+            const mockName = "Developer";
+            const mockEmail = "dev@test.local";
+            document.getElementById('userName').textContent = mockName;
+            document.getElementById('profileName').value = mockName;
+            document.getElementById('profileEmail').value = mockEmail;
+
+            console.log("✅ Bypassed Firebase - Developer mode active");
+        }
+
+        // Sign up
+        async function signUp() {
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+
+            if (!name || !email || !password) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('Password must be at least 6 characters');
+                return;
+            }
+
+            try {
+                const userCredential = await window.createUserWithEmailAndPassword(window.auth, email, password);
+
+                // Update profile with display name
+                await window.updateProfile(userCredential.user, {
+                    displayName: name
+                });
+
+                // Save user data to Firestore
+                await window.setDoc(window.doc(window.db, 'users', userCredential.user.uid), {
+                    displayName: name,
+                    email: email,
+                    createdAt: new Date().toISOString()
+                });
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        // Save profile
+        async function saveProfile() {
+            const name = document.getElementById('profileName').value;
+
+            if (!name) {
+                alert('Please enter a name');
+                return;
+            }
+
+            try {
+                const user = window.auth.currentUser;
+                await window.updateProfile(user, { displayName: name });
+                await window.setDoc(window.doc(window.db, 'users', user.uid), {
+                    displayName: name,
+                    email: user.email,
+                    updatedAt: new Date().toISOString()
+                }, { merge: true });
+
+                document.getElementById('userName').textContent = name;
+                alert('Profile updated successfully!');
+            } catch (error) {
+                alert('Error updating profile: ' + error.message);
+            }
+        }
+
+        // Logout
+        async function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                try {
+                    await window.signOut(window.auth);
+                } catch (error) {
+                    alert('Error signing out: ' + error.message);
+                }
+            }
+        }
+
+        // Theme Management
+        function changeTheme(themeName) {
+            // Remove all theme classes
+            document.body.className = document.body.className
+                .split(' ')
+                .filter(c => !c.startsWith('theme-'))
+                .join(' ');
+
+            // Add new theme
+            document.body.classList.add(themeName);
+
+            // Update checkmarks and styling
+            document.querySelectorAll('[id$="-btn"]').forEach(btn => {
+                const checkmark = btn.querySelector('.checkmark');
+                if (checkmark) checkmark.remove();
+                // Remove theme-selected class
+                btn.classList.remove('theme-selected');
+                // Reset border
+                const circle = btn.querySelector('div');
+                if (circle) circle.style.border = '3px solid #e5e7eb';
+            });
+
+            const selectedBtn = document.getElementById(themeName + '-btn');
+            if (selectedBtn) {
+                // Add checkmark
+                const checkmark = document.createElement('div');
+                checkmark.className = 'checkmark absolute inset-0 flex items-center justify-center';
+                checkmark.innerHTML = '<span class="text-lg text-white" style="text-shadow: 0 1px 2px rgba(0,0,0,0.5);">✓</span>';
+                selectedBtn.appendChild(checkmark);
+
+                // Add theme-selected class
+                selectedBtn.classList.add('theme-selected');
+            }
+
+            // Save to localStorage
+            localStorage.setItem('appTheme', themeName);
+
+            console.log('🎨 Theme changed to:', themeName);
+        }
+
+        // Notifications Toggle
+        function toggleNotifications(enabled) {
+            console.log('Notifications:', enabled ? 'enabled' : 'disabled');
+            localStorage.setItem('notificationsEnabled', enabled);
+            // Add actual notification logic here
+        }
+
+        // Dark Mode Toggle
+        function toggleDarkMode(enabled) {
+            if (enabled) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+            localStorage.setItem('darkMode', enabled);
+            console.log('Dark mode:', enabled ? 'enabled' : 'disabled');
+        }
+
+        // Initialize settings on load
+        function initializeSettings() {
+            // Load saved theme
+            const savedTheme = localStorage.getItem('appTheme') || 'theme-default';
+            changeTheme(savedTheme);
+
+            // Load notifications setting
+            const notifEnabled = localStorage.getItem('notificationsEnabled') === 'true';
+            const notifToggle = document.getElementById('notificationsToggle');
+            if (notifToggle) notifToggle.checked = notifEnabled;
+
+            // Load dark mode setting
+            const darkModeEnabled = localStorage.getItem('darkMode') === 'true';
+            const darkToggle = document.getElementById('darkModeToggle');
+            if (darkToggle) darkToggle.checked = darkModeEnabled;
+            if (darkModeEnabled) document.body.classList.add('dark-mode');
+
+            // Update profile display
+            const profileDisplayName = document.getElementById('profileDisplayName');
+            const profileDisplayEmail = document.getElementById('profileDisplayEmail');
+            const profileName = document.getElementById('profileName');
+            const profileEmail = document.getElementById('profileEmail');
+
+            if (profileDisplayName && profileName) {
+                profileDisplayName.textContent = profileName.value || 'Developer';
+            }
+            if (profileDisplayEmail && profileEmail) {
+                profileDisplayEmail.textContent = profileEmail.value || 'dev@test.local';
+            }
+        }
+
+        // Handle enter key on login and initialize settings
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('loginEmail')?.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') signIn();
+            });
+            document.getElementById('loginPassword')?.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') signIn();
+            });
+            document.getElementById('signupPassword')?.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') signUp();
+            });
+
+            // Initialize settings
+            initializeSettings();
+        });
+    </script>
+
+</body>
+</html>

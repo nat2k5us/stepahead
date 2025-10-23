@@ -278,6 +278,8 @@
             align-items: center;
             justify-content: center;
             padding: 2rem;
+            position: relative;
+            z-index: 200; /* Higher than mobile-header/nav (z-index: 100) */
         }
 
         .login-container {
@@ -290,6 +292,7 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             position: relative;
             pointer-events: auto;
+            z-index: 201; /* Ensure login container is above everything */
         }
 
         .login-logo {
@@ -313,13 +316,16 @@
             font-size: 1rem;
             transition: all 0.2s;
             background: white;
-            pointer-events: auto;
+            pointer-events: auto !important;
             position: relative;
-            z-index: 1;
+            z-index: 202;
             -webkit-user-select: text;
             user-select: text;
             -webkit-tap-highlight-color: rgba(102, 126, 234, 0.1);
             touch-action: manipulation;
+            /* iOS-specific fixes */
+            -webkit-appearance: none;
+            appearance: none;
         }
 
         .login-input:focus {
@@ -340,13 +346,16 @@
             cursor: pointer;
             transition: all 0.2s;
             margin-bottom: 1rem;
-            pointer-events: auto;
+            pointer-events: auto !important;
             position: relative;
-            z-index: 1;
+            z-index: 202;
             -webkit-user-select: none;
             user-select: none;
             -webkit-tap-highlight-color: rgba(102, 126, 234, 0.2);
             touch-action: manipulation;
+            /* iOS-specific fixes */
+            -webkit-appearance: none;
+            appearance: none;
         }
 
         .login-button:hover {
@@ -358,11 +367,16 @@
             color: #667eea;
             text-decoration: none;
             font-weight: 600;
-            pointer-events: auto;
+            pointer-events: auto !important;
             position: relative;
-            z-index: 1;
+            z-index: 202;
             -webkit-tap-highlight-color: rgba(102, 126, 234, 0.2);
             touch-action: manipulation;
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            /* iOS tap target size minimum */
+            min-height: 44px;
+            min-width: 44px;
         }
 
         .error-message {
@@ -376,6 +390,13 @@
 
         .hidden {
             display: none !important;
+            pointer-events: none !important;
+            visibility: hidden !important;
+        }
+
+        /* Ensure fixed elements inside hidden containers are also hidden */
+        .hidden * {
+            pointer-events: none !important;
         }
 
         /* Theme Variables - Default (Purple) */
@@ -1039,14 +1060,11 @@
 
         const app = initializeApp(firebaseConfig);
 
-        // Use initializeAuth with indexedDB persistence for better iOS WebView support
-        const auth = initializeAuth(app, {
-            persistence: indexedDBLocalPersistence
-        });
-
+        // Use default auth (no persistence for now to debug)
+        const auth = getAuth(app);
         const db = getFirestore(app);
 
-        console.log('🔥 Firebase initialized with indexedDB persistence for iOS');
+        console.log('🔥 Firebase initialized');
         console.log('Auth:', auth);
         console.log('DB:', db);
 
@@ -1090,10 +1108,55 @@
 
         console.log('✅ App functions exposed to window');
 
+        // Force login screen to be interactive
+        function ensureLoginScreenClickable() {
+            const loginScreen = document.getElementById('loginScreen');
+            const mainApp = document.getElementById('mainAppContainer');
+
+            console.log('🔍 Login screen exists:', !!loginScreen);
+            console.log('🔍 Login screen hidden?', loginScreen?.classList.contains('hidden'));
+            console.log('🔍 Main app exists:', !!mainApp);
+
+            // Always apply fixes, regardless of hidden state
+            if (loginScreen) {
+                console.log('🔧 Applying login screen fixes');
+                loginScreen.style.zIndex = '9999';
+                loginScreen.style.position = 'relative';
+                loginScreen.style.pointerEvents = 'auto';
+            }
+
+            // Force hide main app completely
+            if (mainApp) {
+                console.log('🔧 Hiding main app container');
+                mainApp.style.display = 'none';
+                mainApp.style.visibility = 'hidden';
+                mainApp.style.pointerEvents = 'none';
+            }
+        }
+
+        // Wait for DOM to be fully loaded before fixing login screen
+        console.log('🚨 Running immediate login screen fix...');
+        if (document.readyState === 'loading') {
+            console.log('⏳ DOM still loading, waiting for DOMContentLoaded...');
+            document.addEventListener('DOMContentLoaded', () => {
+                console.log('✅ DOM loaded, applying fixes');
+                setTimeout(() => ensureLoginScreenClickable(), 100);
+            });
+        } else {
+            console.log('✅ DOM already loaded, applying fixes immediately');
+            setTimeout(() => ensureLoginScreenClickable(), 100);
+        }
+
         // Auth state listener
         console.log('👂 Setting up auth state listener...');
         onAuthStateChanged(auth, async (user) => {
             console.log('🔔 Auth state changed, user:', user ? user.email : 'null');
+
+            // Ensure login screen is clickable when showing
+            if (!user) {
+                setTimeout(() => ensureLoginScreenClickable(), 100);
+            }
+
             if (user) {
                 console.log('🔐 User authenticated:', user.email);
 
@@ -2821,6 +2884,15 @@
             // Clear any error messages first
             document.getElementById('errorMessage').classList.add('hidden');
 
+            // Developer/Test Mode - Bypass Firebase for local development
+            // Just click Sign In to enter the app without credentials
+            console.log("🔓 Dev mode - bypassing authentication");
+            bypassFirebaseLogin();
+            return;
+
+            // Production Firebase authentication (currently disabled for dev)
+            // Uncomment below for production:
+            /*
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
 
@@ -2872,6 +2944,7 @@
 
                 showError(errorMessage);
             }
+            */
         }
 
         // Bypass Firebase login for development/testing
@@ -3122,6 +3195,57 @@
             initializeSettings();
         });
 
+    </script>
+
+    <!-- iOS Login Screen Fix - Run after DOM is fully loaded -->
+    <script>
+        console.log('🎯 Final iOS fix script running...');
+        console.log('🎯 Document ready state:', document.readyState);
+
+        // Simple, direct fix
+        const loginScreen = document.getElementById('loginScreen');
+        const mainApp = document.getElementById('mainAppContainer');
+
+        if (loginScreen) {
+            console.log('🎯 Found login screen');
+
+            // Log current state
+            const computed = window.getComputedStyle(loginScreen);
+            console.log('🎯 Login screen display:', computed.display);
+            console.log('🎯 Login screen visibility:', computed.visibility);
+            console.log('🎯 Login screen opacity:', computed.opacity);
+            console.log('🎯 Login screen zIndex:', computed.zIndex);
+            console.log('🎯 Login screen has hidden class:', loginScreen.classList.contains('hidden'));
+
+            // Force it visible
+            loginScreen.classList.remove('hidden');
+            loginScreen.style.display = 'flex';
+            loginScreen.style.visibility = 'visible';
+            loginScreen.style.opacity = '1';
+            loginScreen.style.zIndex = '10000';
+            loginScreen.style.position = 'relative';
+            console.log('🎯 Applied visibility fixes to login screen');
+        } else {
+            console.log('🎯 ERROR: Login screen not found!');
+        }
+
+        if (mainApp) {
+            console.log('🎯 Forcing main app hidden');
+            mainApp.classList.add('hidden');
+            mainApp.style.display = 'none';
+            mainApp.style.visibility = 'hidden';
+            mainApp.style.pointerEvents = 'none';
+        }
+
+        // Test: Set body to bright red to see if ANYTHING renders
+        document.body.style.backgroundColor = 'red';
+        console.log('🎯 Set body background to RED for testing');
+
+        // Log body dimensions
+        console.log('🎯 Body width:', document.body.offsetWidth);
+        console.log('🎯 Body height:', document.body.offsetHeight);
+        console.log('🎯 Window width:', window.innerWidth);
+        console.log('🎯 Window height:', window.innerHeight);
     </script>
 
 </body>
