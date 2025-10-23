@@ -993,6 +993,7 @@
                 "Arrange the pillows at the top",
                 "Step back and look - you did it!"
               ],
+              stepDurations: [30, 20, 15, 10], // seconds for each step
               color: "#E8F4F8"
             },
             {
@@ -1387,8 +1388,206 @@
         // STEPAHEAD: Navigation state
         let currentView = 'home'; // 'home' or 'task'
         let currentTask = null;
+        let currentStepIndex = 0;
+        let timerInterval = null;
+        let timeRemaining = 0;
+        let repeatCount = 0; // Track how many times user asked to repeat
+        let isListening = false;
 
-        // STEPAHEAD: Show task step-by-step view
+        // STEPAHEAD: Format time as MM:SS with negative sign
+        function formatTime(seconds) {
+            const isNegative = seconds < 0;
+            const absSeconds = Math.abs(seconds);
+            const mins = Math.floor(absSeconds / 60);
+            const secs = absSeconds % 60;
+            const formatted = `${mins}:${secs.toString().padStart(2, '0')}`;
+            return isNegative ? `-${formatted}` : formatted;
+        }
+
+        // STEPAHEAD: Voice command recognition (using Web Speech API for reliability)
+        let recognition = null;
+
+        function startVoiceRecognition() {
+            if (isListening) return;
+
+            try {
+                // Use Web Speech API (works on iOS Safari/WebView)
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+                if (!SpeechRecognition) {
+                    console.log('❌ Speech recognition not supported');
+                    console.log('Platform:', navigator.platform);
+                    console.log('UserAgent:', navigator.userAgent);
+                    return;
+                }
+
+                console.log('✅ SpeechRecognition available:', SpeechRecognition);
+
+                recognition = new SpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                recognition.lang = 'en-US';
+
+                console.log('🎤 Recognition object created:', recognition);
+                console.log('🎤 Continuous:', recognition.continuous);
+                console.log('🎤 InterimResults:', recognition.interimResults);
+                console.log('🎤 Lang:', recognition.lang);
+
+                recognition.onstart = () => {
+                    isListening = true;
+                    console.log('🎤 Voice recognition started (onstart fired)');
+                };
+
+                recognition.onresult = (event) => {
+                    console.log('🎤 onresult fired, event:', event);
+                    console.log('🎤 Results length:', event.results.length);
+
+                    const last = event.results.length - 1;
+                    const result = event.results[last];
+                    const text = result[0].transcript;
+                    const isFinal = result.isFinal;
+
+                    console.log('🎤 Heard:', text, '(final:', isFinal + ')');
+                    console.log('🎤 Confidence:', result[0].confidence);
+
+                    // Only process final results to avoid duplicates
+                    if (isFinal) {
+                        handleVoiceCommand(text);
+                    }
+                };
+
+                recognition.onerror = (event) => {
+                    console.error('❌ Voice recognition error:', event.error);
+                    console.error('❌ Error message:', event.message);
+                    if (event.error === 'no-speech') {
+                        // Restart if no speech detected
+                        setTimeout(() => {
+                            if (currentView === 'task' && !isListening) {
+                                startVoiceRecognition();
+                            }
+                        }, 1000);
+                    }
+                };
+
+                recognition.onend = () => {
+                    isListening = false;
+                    console.log('🎤 Voice recognition ended');
+                    // Auto-restart if still in task view
+                    setTimeout(() => {
+                        if (currentView === 'task' && !isListening) {
+                            console.log('🎤 Auto-restarting...');
+                            startVoiceRecognition();
+                        }
+                    }, 500);
+                };
+
+                recognition.start();
+                console.log('🎤 .start() called, waiting for onstart event...');
+
+            } catch (error) {
+                console.error('❌ Voice recognition error:', error);
+                console.error('❌ Error stack:', error.stack);
+                isListening = false;
+            }
+        }
+
+        function stopVoiceRecognition() {
+            if (!isListening || !recognition) return;
+
+            try {
+                recognition.stop();
+                recognition = null;
+                isListening = false;
+                console.log('🎤 Voice recognition stopped');
+            } catch (error) {
+                console.error('❌ Error stopping voice recognition:', error);
+            }
+        }
+
+        // STEPAHEAD: Handle voice commands
+        function handleVoiceCommand(text) {
+            if (!text) return;
+
+            const command = text.toLowerCase().trim();
+            console.log('🎤 Processing command:', command);
+
+            // Next/OK/Done - move to next step
+            if (command.includes('next') || command.includes('ok') || command.includes('done')) {
+                console.log('✅ Command: Next Step');
+                nextStep();
+            }
+            // Repeat - announce again and reset timer
+            else if (command.includes('repeat') || command.includes('again')) {
+                console.log('🔁 Command: Repeat');
+                repeatStep();
+            }
+            // Break it down - more detailed explanation
+            else if (command.includes('break it down') || command.includes('break down')) {
+                console.log('📝 Command: Break It Down');
+                breakDownStep();
+            }
+        }
+
+        // STEPAHEAD: Repeat current step
+        function repeatStep() {
+            repeatCount++;
+            console.log('🔁 Repeat count:', repeatCount);
+
+            // Reset timer to original duration
+            const task = currentTask.task;
+            const stepIndex = currentStepIndex;
+            const hasTimer = task.stepDurations && task.stepDurations[stepIndex];
+
+            if (hasTimer) {
+                stopTimer();
+                timeRemaining = task.stepDurations[stepIndex];
+                startTimer();
+            }
+
+            // Announce step again
+            const currentStep = task.steps[stepIndex];
+            announceStep(currentStep);
+
+            // Re-render to update display
+            renderStepView();
+        }
+
+        // STEPAHEAD: Break down step into more detail
+        function breakDownStep() {
+            const task = currentTask.task;
+            const currentStep = task.steps[currentStepIndex];
+
+            // Generate more detailed breakdown
+            const breakdown = generateStepBreakdown(currentStep);
+
+            // Reset timer
+            const stepIndex = currentStepIndex;
+            const hasTimer = task.stepDurations && task.stepDurations[stepIndex];
+            if (hasTimer) {
+                stopTimer();
+                timeRemaining = task.stepDurations[stepIndex];
+                startTimer();
+            }
+
+            // Announce detailed breakdown only
+            announceStep(breakdown);
+            console.log('🔊 Breaking down step:', breakdown);
+        }
+
+        // STEPAHEAD: Generate detailed breakdown of step
+        function generateStepBreakdown(step) {
+            // Simple breakdown - add more context and detail
+            const breakdowns = {
+                'Pull the blanket and sheets up to the pillows': 'Start at the bottom of the bed. Grab the edge of the blanket with both hands. Slowly pull it up toward the pillows. Make sure it covers the whole bed.',
+                'Smooth out any wrinkles with your hands': 'Use your hands like an iron. Start from the top and move down. Press firmly to remove bumps and wrinkles. Make the surface flat and even.',
+                'Arrange the pillows at the top': 'Pick up each pillow. Fluff it by hitting it gently. Place it at the head of the bed. Line them up nicely in a row.',
+                'Step back and look - you did it!': 'Take a few steps backward. Look at your work. The bed should look neat and tidy. Great job completing this task!'
+            };
+
+            return breakdowns[step] || `Let me explain: ${step}. Take your time and do one part at a time.`;
+        }
+
+        // STEPAHEAD: Show task step-by-step view with timer
         function showTaskView(day, taskIndex) {
             console.log('📋 showTaskView called:', day, taskIndex);
 
@@ -1398,51 +1597,187 @@
             const task = tasks[day][taskIndex];
             currentTask = { day, taskIndex, task };
             currentView = 'task';
+            currentStepIndex = 0;
+            repeatCount = 0; // Reset repeat counter
+
+            renderStepView();
+
+            // Start voice recognition
+            startVoiceRecognition();
+        }
+
+        // STEPAHEAD: Render current step with timer
+        function renderStepView() {
+            const homeTab = document.getElementById('homeTab');
+            if (!homeTab || !currentTask) return;
+
+            const task = currentTask.task;
+            const stepIndex = currentStepIndex;
+            const totalSteps = task.steps.length;
+            const currentStep = task.steps[stepIndex];
+
+            // Check if this task has stepDurations
+            const hasTimer = task.stepDurations && task.stepDurations[stepIndex];
+            const duration = hasTimer ? task.stepDurations[stepIndex] : 0;
+
+            // Initialize timer if not started
+            if (timeRemaining === 0 && hasTimer) {
+                timeRemaining = duration;
+                console.log('⏰ Starting timer for', duration, 'seconds');
+                startTimer();
+                // Announce the step
+                announceStep(currentStep);
+            }
 
             const html = `
                 <div class="p-4">
                     <!-- Back button -->
-                    <button onclick="showHomeView()" class="flex items-center gap-2 mb-4 text-blue-600 hover:text-blue-800">
+                    <button onclick="exitTaskView()" class="flex items-center gap-2 mb-4 text-blue-600 hover:text-blue-800">
                         <span>←</span>
                         <span>Back to Tasks</span>
                     </button>
 
-                    <!-- Task header -->
-                    <div class="bg-white rounded-lg shadow-lg p-6 mb-4">
-                        <div class="flex items-center gap-3 mb-4">
+                    <!-- Task header and timer cards -->
+                    <div class="flex gap-3 mb-4">
+                        <!-- Task title card -->
+                        <div class="flex-1 bg-white rounded-lg shadow-lg p-6 flex items-center gap-3">
                             <span class="text-4xl">${task.icon}</span>
-                            <h2 class="text-2xl font-bold">${task.name}</h2>
+                            <h2 class="text-2xl font-bold text-black">${task.name}</h2>
                         </div>
-                        <div class="text-gray-600">${task.steps.length} steps to complete</div>
+
+                        ${hasTimer ? `
+                            <!-- Timer card -->
+                            <div class="flex-shrink-0 bg-white rounded-lg shadow-lg p-6 flex items-center justify-center min-w-[180px] ${timeRemaining < 0 ? 'bg-red-50' : 'bg-blue-50'} border-4 ${timeRemaining < 0 ? 'border-red-500' : timeRemaining <= 5 ? 'border-red-400' : 'border-blue-500'}">
+                                <div id="timerDisplay" class="text-6xl font-bold ${timeRemaining < 0 ? 'text-red-600' : timeRemaining <= 5 ? 'text-red-500' : 'text-blue-600'}">
+                                    ${formatTime(timeRemaining)}
+                                </div>
+                            </div>
+                        ` : ''}
                     </div>
 
-                    <!-- Steps list -->
-                    <div class="space-y-3">
-                        ${task.steps.map((step, index) => `
-                            <div class="bg-white rounded-lg shadow p-4">
-                                <div class="flex gap-3">
-                                    <div class="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">
-                                        ${index + 1}
-                                    </div>
-                                    <div class="flex-1">
-                                        <p class="text-gray-800">${step}</p>
-                                    </div>
-                                </div>
+                    <!-- Current step card -->
+                    <div class="bg-white rounded-lg shadow-lg p-8 mb-4">
+                        <p class="text-2xl text-gray-800 leading-relaxed text-center font-semibold">${currentStep}</p>
+                        <p class="text-lg text-gray-600 leading-relaxed text-center italic mt-4">${generateStepBreakdown(currentStep)}</p>
+                    </div>
+
+                    <!-- Step indicators (numbered circles) -->
+                    <div class="flex justify-center gap-2 mb-6">
+                        ${Array.from({length: totalSteps}, (_, i) => `
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
+                                i === stepIndex
+                                    ? 'bg-blue-500 text-white scale-110'
+                                    : i < stepIndex
+                                        ? 'bg-green-500 text-white'
+                                        : 'bg-gray-200 text-gray-500'
+                            }">
+                                ${i < stepIndex ? '✓' : i + 1}
                             </div>
                         `).join('')}
                     </div>
 
-                    <!-- Complete button -->
-                    <div class="mt-6">
-                        <button onclick="showHomeView()" class="w-full bg-green-500 text-white font-bold py-4 rounded-lg hover:bg-green-600">
-                            ✓ Mark Complete
-                        </button>
+                    <!-- Navigation buttons -->
+                    <div class="space-y-3">
+                        ${stepIndex < totalSteps - 1 ? `
+                            <button onclick="nextStep()" class="w-full bg-blue-500 text-white font-bold py-4 rounded-lg hover:bg-blue-600">
+                                Next Step →
+                            </button>
+                        ` : `
+                            <button onclick="completeTask()" class="w-full bg-green-500 text-white font-bold py-4 rounded-lg hover:bg-green-600">
+                                ✓ Complete Task
+                            </button>
+                        `}
+                        ${stepIndex > 0 ? `
+                            <button onclick="previousStep()" class="w-full bg-gray-300 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-400">
+                                ← Previous Step
+                            </button>
+                        ` : ''}
                     </div>
                 </div>
             `;
 
             homeTab.innerHTML = html;
-            console.log('✅ Task view rendered');
+            console.log('✅ Step view rendered, step', stepIndex + 1, 'of', totalSteps, 'hasTimer:', hasTimer);
+        }
+
+        // STEPAHEAD: Announce step using Text-to-Speech
+        function announceStep(stepText) {
+            if ('speechSynthesis' in window) {
+                // Cancel any ongoing speech
+                window.speechSynthesis.cancel();
+
+                const utterance = new SpeechSynthesisUtterance(stepText);
+                utterance.rate = 0.9; // Slightly slower for clarity
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+
+                window.speechSynthesis.speak(utterance);
+                console.log('🔊 Announcing:', stepText);
+            } else {
+                console.log('❌ Speech synthesis not supported');
+            }
+        }
+
+        // STEPAHEAD: Timer functions
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+
+                // Update timer display with MM:SS format
+                const timerDisplay = document.getElementById('timerDisplay');
+                if (timerDisplay) {
+                    timerDisplay.textContent = formatTime(timeRemaining);
+
+                    // Change color based on time
+                    if (timeRemaining < 0) {
+                        // Overtime - red
+                        timerDisplay.classList.remove('text-blue-500', 'text-blue-600', 'text-red-500');
+                        timerDisplay.classList.add('text-red-600');
+                    } else if (timeRemaining <= 5) {
+                        // Warning - red
+                        timerDisplay.classList.remove('text-blue-500', 'text-blue-600');
+                        timerDisplay.classList.add('text-red-500');
+                    }
+                }
+
+                // Never stop - let it go negative
+                // Timer continues indefinitely until user clicks Next Step
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            timeRemaining = 0;
+        }
+
+        // STEPAHEAD: Step navigation
+        function nextStep() {
+            stopTimer();
+            currentStepIndex++;
+            renderStepView();
+        }
+
+        function previousStep() {
+            stopTimer();
+            currentStepIndex--;
+            renderStepView();
+        }
+
+        function completeTask() {
+            stopTimer();
+            stopVoiceRecognition();
+            showHomeView();
+        }
+
+        function exitTaskView() {
+            stopTimer();
+            stopVoiceRecognition();
+            showHomeView();
         }
 
         // STEPAHEAD: Show home view (task list)
@@ -1450,6 +1785,7 @@
             console.log('🏠 showHomeView called');
             currentView = 'home';
             currentTask = null;
+            stopVoiceRecognition(); // Ensure voice recognition stopped
             renderHomeTab();
         }
 
